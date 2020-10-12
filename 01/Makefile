@@ -2,11 +2,19 @@ CC = g++ --std=c++17
 
 all: program
 
-program: allocator.o
-	$(CC) allocator.o -o program
+program: main.o tests.o allocator.o
+	$(CC) tests.o allocator.o main.o -o program
+
 
 allocator.o: allocator.cpp allocator.h
-	$(CC) -c my_allocator.cpp
+	$(CC) -c allocator.cpp
+
+tests.o: tests.cpp tests.h
+	$(CC) -c tests.cpp
+
+main.o: main.cpp
+	$(CC) -c main.cpp
+
 
 test: program
 	./program
