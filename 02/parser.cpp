@@ -6,13 +6,15 @@ void Parser::AddActionOnCondition(TCondition condition, TAction action)
 }
 
 void Parser::Apply() const {
-  std::istringstream ss(text_);
-  while (ss) {
+  std::istringstream text_stream(text_);
+  while (text_stream) {
     std::string token;
-    ss >> token;
-    for (const auto &[condition, action] : actions_on_conditions_) {
-      if (condition(token)) {
-        action(token);
+    text_stream >> token;
+    if (!token.empty()) {
+      for (const auto &[condition, action] : actions_on_conditions_) {
+        if (condition(token)) {
+          action(token);
+        }
       }
     }
   }

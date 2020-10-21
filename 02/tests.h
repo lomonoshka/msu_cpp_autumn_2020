@@ -3,4 +3,5 @@
 #include <cstdlib>
 #include <cassert>
 
-void TestWithFunctionsFromHw();
+void TestParser();
+void TestIsInteger(); 
