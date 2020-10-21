@@ -40,31 +40,31 @@ void TestParser() {
 
   //To understand that code work correctly we will create two vectors for each condition. We will push_back
   //token to respective vectors when relevant condition is true.
-  std::vector<std::string> integers, not_integers;
-  auto push_integer = [&integers](const std::string &s) {integers.push_back(std::move(s));};
-  auto push_notinteger = [&not_integers](const std::string &s) {not_integers.push_back(std::move(s));};
+  std::vector<std::string> numbers, strings;
+  auto push_number = [&numbers](const std::string &s) {numbers.push_back(std::move(s));};
+  auto push_string = [&strings](const std::string &s) {strings.push_back(std::move(s));};
   
   std::string text = CreateRandomText(8, 1000);
   Parser parser(text);
-  parser.AddActionOnCondition(IsInteger, push_integer);
-  parser.AddActionOnCondition(IsNotInteger, push_notinteger);
+  parser.AddActionOnCondition(IsInteger, push_number);
+  parser.AddActionOnCondition(IsNotInteger, push_string);
   parser.Apply();
 
   //Create two vectors to compare results
-  std::vector<std::string> integers_true, not_integers_true;
+  std::vector<std::string> numbers_true, strings_true;
   std::istringstream text_stream(text);
   while (text_stream) {
     std::string token;
     text_stream >> token;
     if (!token.empty()) {
       if (IsInteger(token)) {
-        integers_true.push_back(std::move(token));
+        numbers_true.push_back(std::move(token));
       } else {
-        not_integers_true.push_back(std::move(token));
+        strings_true.push_back(std::move(token));
       }
     }
   }
 
-  ASSERT(integers == integers_true);
-  ASSERT(not_integers == not_integers_true);
+  ASSERT(numbers == numbers_true);
+  ASSERT(strings == strings_true);
 }
