@@ -9,7 +9,7 @@ bool Condition(const string& token);
 ```c++
 void Action(const string& token);
 ```
-Класс Parser позволяет добавить пользовательские функции Condition и соответствущию ему пользовательскую функцию Action.
+Класс Parser позволяет добавить пользовательские функции Condition и соответствущие им пользовательские функцие Action.
 ```c++
 Parser = parser(some_text);
 parser.add(UserCondition, UserAction)
