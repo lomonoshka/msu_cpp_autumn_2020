@@ -1,258 +1,349 @@
-#pragma ones
+#pragma once
 
-#include <iostream>
-#include <functional>
-
+#include "ncopy_array.h"
 using TShape = std::pair<size_t, size_t>;
 
-template <typename T>
-class array
-{
-public:
-  array() = default;
-  array(const size_t &size);
-  array(T *data_, const size_t &size);
-  array(const std::initializer_list<T> &list);
-  array(const array &other);
-  ~array();
-
-  array<T> &operator=(const array<T> &rhs);
-  const T &operator[](const size_t &index) const;
-  T &operator[](const size_t &index);
-
-  const T *begin() const;
-  T *begin();
-
-  const T *end() const;
-  T *end();
-
-  size_t size() const;
-
-  array apply(std::function<void(T &object)> func) const;
-
-  template <typename U>
-  array operator+(const U &rhs) const;
-
-  template <typename U>
-  array &operator+=(const U &rhs);
-
-  template <typename U>
-  array operator-(const U &rhs) const;
-
-  template <typename U>
-  array &operator-=(const U &rhs);
-
-  template <typename U>
-  array operator*(const U &rhs) const;
-
-  template <typename U>
-  array &operator*=(const U &rhs);
-
-  template <typename U>
-  array operator/(const U &rhs) const;
-
-  template <typename U>
-  array &operator/=(const U &rhs);
-
+template<typename T>
+class matrix {
 private:
-  size_t size_ = 0;
-  T *data_ = nullptr;
+  class iterator {
+  public:
+    iterator(size_t size, T *pointer);
+    iterator(const iterator &other);
+
+    bool operator!=(iterator const& other) const;
+    bool operator==(iterator const& other) const;
+    ncopy_array<T> operator*() const;
+    iterator& operator++();
+
+  private:
+    size_t size_;
+    T *pointer_;
+};
+
+public:
+  matrix() = default;
+  matrix(const TShape &shape);
+  matrix(T *data_, const TShape &shape);
+  matrix(const std::initializer_list<array<T>> &list);
+  matrix(const matrix &other);
+  ~matrix();
+
+  matrix<T>& operator=(const matrix<T> &rhs);
+  const ncopy_array<T> operator[](const size_t &index) const;
+  ncopy_array<T> operator[](const size_t &index);
+  
+  const iterator begin() const;
+  iterator begin();
+  const iterator end() const;
+  iterator end();
+  
+  size_t size() const;
+  TShape shape() const;
+
+  matrix apply(std::function<void(T &object)> func) const;
+  matrix& apply_inplace(std::function<void(T &object)> func);
+
+  template <typename U>
+  matrix operator+(const U &rhs) const;
+
+  template <typename U>
+  matrix& operator+=(const U &rhs);
+
+  template <typename U>
+  matrix operator-(const U &rhs) const;
+
+  template <typename U>
+  matrix& operator-=(const U &rhs);
+
+  template <typename U>
+  matrix operator*(const U &rhs) const;
+
+  template <typename U>
+  matrix& operator*=(const U &rhs);
+
+  template <typename U>
+  matrix operator/(const U &rhs) const;
+
+  template <typename U>
+  matrix& operator/=(const U &rhs);
+
+  bool operator==(const matrix& rhs) const;
+  bool operator!=(const matrix& rhs) const;
+
+protected:
+  TShape shape_ = 0;
+  T* data_ = nullptr;
 };
 
 //----------------------------------------------------------------------
 //Implementation
 
 template <typename T>
-array<T>::array(const size_t &size)
+matrix<T>::iterator::iterator(size_t size, T *pointer)
     : size_(size),
-      data_(new T[size_])
+      pointer_(pointer)
 {
 }
 
 template <typename T>
-array<T>::array(T *data, const size_t &size)
-    : size_(size),
-      data_(new T[size_])
+matrix<T>::iterator::iterator(const iterator& other)
+    : size_(other.size_),
+      pointer_(other.pointer_)
+{
+}
+
+template <typename T>
+bool matrix<T>::iterator::operator!=(iterator const& other) const {
+  return !(*this == other);
+}
+
+template <typename T>
+bool matrix<T>::iterator::operator==(iterator const& other) const {
+  return size_ == other.size_ && pointer_ == other.pointer_;
+}
+
+template <typename T>
+ncopy_array<T> matrix<T>::iterator::operator*() const{
+  return ncopy_array<T>(pointer_, size_);
+}
+
+template <typename T>
+typename matrix<T>::iterator& matrix<T>::iterator::operator++() {
+  pointer_ += size_;
+  return *this;
+}
+
+template <typename T>
+matrix<T>::matrix(const TShape &shape)
+    : shape_(shape),
+      data_(new T[size()])
+{
+}
+
+template <typename T>
+matrix<T>::matrix(T* data, const TShape &shape)
+    : shape_(shape),
+      data_(new T[size()])
 {
   std::copy(data, data + size, data_);
 }
 
 template <typename T>
-array<T>::array(const array<T> &other)
-    : size_(other.size_),
-      data_(new T[size_])
+matrix<T>::matrix(const matrix<T> &other)
+    : shape_(other.shape_),
+      data_(new T[size()])
 {
-  std::copy(other.begin(), other.end(), data_);
+  std::copy(other.data_, other.data_ + other.size(), data_);
 }
 
 template <typename T>
-array<T>::array(const std::initializer_list<T> &list)
-: size_(list.size()),
-  data_(new T[size_])
+matrix<T>::matrix(const std::initializer_list<array<T>> &list)
+    : shape_(TShape({list.size(), list.begin()->size()})),
+      data_(new T[size()])
 {
-  std::copy(list.begin(), list.end(), data_);
+  size_t i = 0;
+  for (const array<T> &arr : list) {
+    std::copy(arr.begin(), arr.end(), data_ + shape_.second * (i++));
+  }
 }
 
 template <typename T>
-array<T>::~array() {
+matrix<T>::~matrix()
+{
   delete[] data_;
-  size_ = 0;
 }
 
 template <typename T>
-array<T>& array<T>::operator=(const array<T> &rhs) {
-  if (rhs.size_ <= size_) {
+matrix<T>& matrix<T>::operator=(const matrix<T> &rhs)
+{
+  if (rhs.shape() == shape()) {
     std::copy(rhs.begin(), rhs.end(), data_);
-  } else {
+  }
+  else {
     array<T> tmp(rhs);
     std::swap(tmp.data_, data_);
-    std::swap(tmp.size_, size_);
+    std::swap(tmp.shape_, shape_);
   }
   return *this;
 }
 
 template <typename T>
-const T &array<T>::operator[](const size_t &index) const
+const ncopy_array<T> matrix<T>::operator[](const size_t &index) const
 {
-  if (index >= size_) {
+  if (index >= shape_.first)
+  {
     throw std::out_of_range("Index out of range.");
-  } else {
-    return data_[index];
+  }
+  else
+  {
+    return ncopy_array<T>(data_ + index * shape_.second, shape_.second);
   }
 }
 
 template <typename T>
-T &array<T>::operator[](const size_t &index)
+ncopy_array<T> matrix<T>::operator[](const size_t &index)
 {
-  if (index >= size_) {
+  if (index >= shape_.first)
+  {
     throw std::out_of_range("Index out of range.");
-  } else {
-    return data_[index];
+  }
+  else
+  {
+    return ncopy_array<T>(data_ + index * shape_.second, shape_.second);
   }
 }
 
 template <typename T>
-size_t array<T>::size() const {
-  return size_;
+size_t matrix<T>::size() const {
+  return shape_.first * shape_.second;
 }
 
 template <typename T>
-array<T> array<T>::apply(std::function<void(T &object)> func) const
+TShape matrix<T>::shape() const {
+  return shape_;
+}
+
+template <typename T>
+const typename matrix<T>::iterator matrix<T>::begin() const {
+  return iterator(shape_.second, data_);
+}
+
+template <typename T>
+typename matrix<T>::iterator matrix<T>::begin() {
+  return iterator(shape_.second, data_);
+}
+
+template <typename T>
+const typename matrix<T>::iterator matrix<T>::end() const {
+  return iterator(shape_.second, data_ + size());
+}
+
+template <typename T>
+typename matrix<T>::iterator matrix<T>::end() {
+  return iterator(shape_.second, data_ + size());
+}
+
+template <typename T>
+matrix<T> matrix<T>::apply(std::function<void(T &object)> func) const
 {
-  array<T> result(*this);
-  for (auto &object : result) {
-    func(object);
+  matrix<T> result(*this);
+  for (auto object : result)
+  {
+    object.apply_inplace(func);
   }
-  return result; 
+  return result;
+}
+
+template <typename T>
+matrix<T>& matrix<T>::apply_inplace(std::function<void(T &object)> func)
+{
+  for (auto &object : *this)
+  {
+    object.apply(func);
+  }
+  return *this;
 }
 
 template <typename T>
 template <typename U>
-array<T> array<T>::operator+(const U &rhs) const
+matrix<T> matrix<T>::operator+(const U &rhs) const
 {
   return this->apply([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> &array<T>::operator+=(const U &rhs)
+matrix<T>& matrix<T>::operator+=(const U &rhs)
 {
-  *this = *this + rhs;
-  return *this;
+  return this->apply_inplace([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> array<T>::operator-(const U &rhs) const
+matrix<T> matrix<T>::operator-(const U &rhs) const
 {
   return this->apply([rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> &array<T>::operator-=(const U &rhs)
+matrix<T>& matrix<T>::operator-=(const U &rhs)
 {
-  *this = *this - rhs;
-  return *this;
+  return this->apply_inplace([&rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> array<T>::operator*(const U &rhs) const
+matrix<T> matrix<T>::operator*(const U &rhs) const
 {
-  return this->apply([rhs](T &object) { object *= rhs; });
+  return this->apply([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> &array<T>::operator*=(const U &rhs)
+matrix<T>& matrix<T>::operator*=(const U &rhs)
 {
-  *this = *this * rhs;
-  return *this;
+  return this->apply_inplace([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> array<T>::operator/(const U &rhs) const
+matrix<T> matrix<T>::operator/(const U &rhs) const
 {
   return this->apply([rhs](T &object) { object /= rhs; });
 }
 
 template <typename T>
 template <typename U>
-array<T> &array<T>::operator/=(const U &rhs)
+matrix<T>& matrix<T>::operator/=(const U &rhs)
 {
-  *this = *this / rhs;
-  return *this;
+  return this->apply_inplace([&rhs](T &object) { object /= rhs; });
 }
 
-template <typename T>
-const T *array<T>::begin() const
+// Специализация шаблона для опреций над двумя матрицами
+template <>
+template <>
+matrix<int> matrix<int>::operator+(const matrix<int> &rhs) const
 {
-  return data_;
+  if(shape() != rhs.shape()) {
+    throw std::logic_error("Matrixes with different shape.");
+    return {{}};
+  }
+  matrix<int> result(shape()); 
+  for (size_t i = 0; i < size(); ++i) {
+    result.data_[i] = data_[i] + rhs.data_[i];
+  }
+  return result;
 }
 
-template <typename T>
-T *array<T>::begin()
-{
-  return data_;
+template<typename T>
+bool matrix<T>::operator==(const matrix<T>& rhs) const {
+  if(shape() != rhs.shape()) {
+    return false;
+  }
+  matrix<int> result(shape()); 
+  for (size_t i = 0; i < size(); ++i) {
+    if(data_[i] != rhs.data_[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
-template <typename T>
-const T *array<T>::end() const
-{
-  return data_ + size_;
+template<typename T>
+bool matrix<T>::operator!=(const matrix<T>& rhs) const {
+  return !(*this == rhs);
 }
 
-template <typename T>
-T *array<T>::end()
-{
-  return data_ + size_;
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const matrix<T> &m) {
+  os << "[";
+  bool flag = false; 
+  for (const auto &arr : m) {
+    os << (flag ? ", \n " : "") << arr;
+    flag = true;
+  }
+  os << "]";
+  return os;
 }
-
-// template<typename T>
-// class matrix
-// {
-// public:
-
-//     matrix(TShape shape);
-//     matrix(const matrix &other);
-//     ~matrix();
-
-//     const array operator[](const size_t&) const;
-//     array operator[](const size_t&);
-
-//     template<typename t_multy>
-//     matrix& operator*(const tmulty &rhs) const;
-
-//     template<typename t_multy>
-//     matrix& operator*=(const tmulty &rhs);
-
-//     bool operator==(const matrix &rhs) const;
-//     bool operator!=(const matrix &rhs) const;
-
-//     TShape shape() const;
-// private:
-//     TShape shape_;
-//     T* data_;
-// };

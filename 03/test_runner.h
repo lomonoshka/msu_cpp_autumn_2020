@@ -8,6 +8,11 @@
 #include <string>
 #include <vector>
 
+template <class T, class U>
+std::ostream& operator << (std::ostream& os, const std::pair<T, U>& p) {
+  return os << "(" << p.first << ", " << p.second << ")";
+}
+
 template <class T>
 std::ostream& operator << (std::ostream& os, const std::vector<T>& s) {
   os << "{";
@@ -94,14 +99,14 @@ private:
 };
 
 #define ASSERT_EQUAL(x, y) {            \
-  ostringstream os;                     \
+  std::ostringstream os;                     \
   os << #x << " != " << #y << ", "      \
     << __FILE__ << ":" << __LINE__;     \
   AssertEqual(x, y, os.str());          \
 }
 
 #define ASSERT(x) {                     \
-  ostringstream os;                     \
+  std::ostringstream os;                     \
   os << #x << " is false, "             \
     << __FILE__ << ":" << __LINE__;     \
   Assert(x, os.str());                  \

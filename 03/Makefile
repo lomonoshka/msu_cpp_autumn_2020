@@ -2,8 +2,8 @@ CC = -g++ -std=c++17
 
 all: program
 
-program: main.o tests.o 
-	$(CC) tests.o main.o -o program
+program: main.o
+	$(CC) main.o -o program
 
 main.o: main.cpp
 	$(CC) -c main.cpp
