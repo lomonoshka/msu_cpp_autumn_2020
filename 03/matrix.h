@@ -44,35 +44,29 @@ public:
   matrix apply(std::function<void(T &object)> func) const;
   matrix& apply_inplace(std::function<void(T &object)> func);
 
-  template <typename U>
-  matrix operator+(const U &rhs) const;
+  matrix operator+(const T &rhs) const;
 
-  template <typename U>
-  matrix& operator+=(const U &rhs);
+  matrix& operator+=(const T &rhs);
 
-  template <typename U>
-  matrix operator-(const U &rhs) const;
+  matrix operator-(const T &rhs) const;
 
-  template <typename U>
-  matrix& operator-=(const U &rhs);
+  matrix& operator-=(const T &rhs);
 
-  template <typename U>
-  matrix operator*(const U &rhs) const;
+  matrix operator*(const T &rhs) const;
 
-  template <typename U>
-  matrix& operator*=(const U &rhs);
+  matrix& operator*=(const T &rhs);
 
-  template <typename U>
-  matrix operator/(const U &rhs) const;
+  matrix operator/(const T &rhs) const;
 
-  template <typename U>
-  matrix& operator/=(const U &rhs);
+  matrix& operator/=(const T &rhs);
+
+  matrix operator+(const matrix<T> &rhs) const;
 
   bool operator==(const matrix& rhs) const;
   bool operator!=(const matrix& rhs) const;
 
 protected:
-  TShape shape_ = 0;
+  TShape shape_ = TShape(0, 0);
   T* data_ = nullptr;
 };
 
@@ -126,7 +120,7 @@ matrix<T>::matrix(T* data, const TShape &shape)
     : shape_(shape),
       data_(new T[size()])
 {
-  std::copy(data, data + size, data_);
+  std::copy(data, data + size(), data_);
 }
 
 template <typename T>
@@ -246,65 +240,56 @@ matrix<T>& matrix<T>::apply_inplace(std::function<void(T &object)> func)
 }
 
 template <typename T>
-template <typename U>
-matrix<T> matrix<T>::operator+(const U &rhs) const
+matrix<T> matrix<T>::operator+(const T &rhs) const
 {
   return this->apply([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T>& matrix<T>::operator+=(const U &rhs)
+matrix<T>& matrix<T>::operator+=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T> matrix<T>::operator-(const U &rhs) const
+matrix<T> matrix<T>::operator-(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T>& matrix<T>::operator-=(const U &rhs)
+matrix<T>& matrix<T>::operator-=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T> matrix<T>::operator*(const U &rhs) const
+matrix<T> matrix<T>::operator*(const T &rhs) const
 {
   return this->apply([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T>& matrix<T>::operator*=(const U &rhs)
+matrix<T>& matrix<T>::operator*=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T> matrix<T>::operator/(const U &rhs) const
+matrix<T> matrix<T>::operator/(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object /= rhs; });
 }
 
 template <typename T>
-template <typename U>
-matrix<T>& matrix<T>::operator/=(const U &rhs)
+matrix<T>& matrix<T>::operator/=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object /= rhs; });
 }
 
 // Специализация шаблона для опреций над двумя матрицами
-template <>
-template <>
-matrix<int> matrix<int>::operator+(const matrix<int> &rhs) const
+template <typename T>
+matrix<T> matrix<T>::operator+(const matrix<T> &rhs) const
 {
   if(shape() != rhs.shape()) {
     throw std::logic_error("Matrixes with different shape.");

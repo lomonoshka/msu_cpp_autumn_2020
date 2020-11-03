@@ -29,29 +29,21 @@ public:
   array apply(std::function<void(T &object)> func) const;
   array& apply_inplace(std::function<void(T &object)> func);
 
-  template <typename U>
-  array operator+(const U &rhs) const;
+  array operator+(const T &rhs) const;
 
-  template <typename U>
-  array& operator+=(const U &rhs);
+  array& operator+=(const T &rhs);
 
-  template <typename U>
-  array operator-(const U &rhs) const;
+  array operator-(const T &rhs) const;
 
-  template <typename U>
-  array& operator-=(const U &rhs);
+  array& operator-=(const T &rhs);
 
-  template <typename U>
-  array operator*(const U &rhs) const;
+  array operator*(const T &rhs) const;
 
-  template <typename U>
-  array& operator*=(const U &rhs);
+  array& operator*=(const T &rhs);
 
-  template <typename U>
-  array operator/(const U &rhs) const;
+  array operator/(const T &rhs) const;
 
-  template <typename U>
-  array& operator/=(const U &rhs);
+  array& operator/=(const T &rhs);
 
 private:
   size_t size_ = 0;
@@ -168,57 +160,49 @@ array<T>& array<T>::apply_inplace(std::function<void(T &object)> func)
 }
 
 template <typename T>
-template <typename U>
-array<T> array<T>::operator+(const U &rhs) const
+array<T> array<T>::operator+(const T &rhs) const
 {
   return this->apply([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T>& array<T>::operator+=(const U &rhs)
+array<T>& array<T>::operator+=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> array<T>::operator-(const U &rhs) const
+array<T> array<T>::operator-(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T>& array<T>::operator-=(const U &rhs)
+array<T>& array<T>::operator-=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> array<T>::operator*(const U &rhs) const
+array<T> array<T>::operator*(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T>& array<T>::operator*=(const U &rhs)
+array<T>& array<T>::operator*=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> array<T>::operator/(const U &rhs) const
+array<T> array<T>::operator/(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object /= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T>& array<T>::operator/=(const U &rhs)
+array<T>& array<T>::operator/=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object /= rhs; });
 }

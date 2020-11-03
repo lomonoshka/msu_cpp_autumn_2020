@@ -26,29 +26,21 @@ public:
 
   size_t size() const;
 
-  template <typename U>
-  array<T> operator+(const U &rhs) const;
+  array<T> operator+(const T &rhs) const;
 
-  template <typename U>
-  ncopy_array& operator+=(const U &rhs);
+  ncopy_array& operator+=(const T &rhs);
 
-  template <typename U>
-  array<T> operator-(const U &rhs) const;
+  array<T> operator-(const T &rhs) const;
 
-  template <typename U>
-  ncopy_array& operator-=(const U &rhs);
+  ncopy_array& operator-=(const T &rhs);
 
-  template <typename U>
-  array<T> operator*(const U &rhs) const;
+  array<T> operator*(const T &rhs) const;
 
-  template <typename U>
-  ncopy_array& operator*=(const U &rhs);
+  ncopy_array& operator*=(const T &rhs);
 
-  template <typename U>
-  array<T> operator/(const U &rhs) const;
+  array<T> operator/(const T &rhs) const;
 
-  template <typename U>
-  ncopy_array& operator/=(const U &rhs);
+  ncopy_array& operator/=(const T &rhs);
 private:
   size_t size_ = 0;
   T *data_ = nullptr;
@@ -98,57 +90,49 @@ ncopy_array<T>& ncopy_array<T>::apply_inplace(std::function<void(T &object)> fun
 }
 
 template <typename T>
-template <typename U>
-array<T> ncopy_array<T>::operator+(const U &rhs) const
+array<T> ncopy_array<T>::operator+(const T &rhs) const
 {
   return this->apply([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-ncopy_array<T>& ncopy_array<T>::operator+=(const U &rhs)
+ncopy_array<T>& ncopy_array<T>::operator+=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object += rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> ncopy_array<T>::operator-(const U &rhs) const
+array<T> ncopy_array<T>::operator-(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-ncopy_array<T>& ncopy_array<T>::operator-=(const U &rhs)
+ncopy_array<T>& ncopy_array<T>::operator-=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object -= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> ncopy_array<T>::operator*(const U &rhs) const
+array<T> ncopy_array<T>::operator*(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-ncopy_array<T>& ncopy_array<T>::operator*=(const U &rhs)
+ncopy_array<T>& ncopy_array<T>::operator*=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object *= rhs; });
 }
 
 template <typename T>
-template <typename U>
-array<T> ncopy_array<T>::operator/(const U &rhs) const
+array<T> ncopy_array<T>::operator/(const T &rhs) const
 {
   return this->apply([rhs](T &object) { object /= rhs; });
 }
 
 template <typename T>
-template <typename U>
-ncopy_array<T>& ncopy_array<T>::operator/=(const U &rhs)
+ncopy_array<T>& ncopy_array<T>::operator/=(const T &rhs)
 {
   return this->apply_inplace([&rhs](T &object) { object /= rhs; });
 }
