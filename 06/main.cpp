@@ -3,8 +3,7 @@
 #include "test_runner.h"
 #include "tests.cpp"
 
-int main()
-{
+int main() {
     TestRunner tr;
     RUN_TEST(tr, test_format);
     return 0;

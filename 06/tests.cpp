@@ -10,25 +10,20 @@ void test_format() {
     ASSERT_EQUAL(format("oooo{0}oooo", "000"), "oooo000oooo");
 
     bool error = false;
-    try
-    {
+    try {
         auto t = format("{", 1);
-    }
-    catch (const std::logic_error &e)
-    {
+    } catch (const std::logic_error &e) {
         error = true;
     }
+    
     ASSERT(error);
-
     error = false;
-    try
-    {
+    try {
         auto t = format("{asdas}sdfsd{1}", 1, 2);
-    }
-    catch (const std::logic_error &e)
-    {
+    } catch (const std::logic_error &e) {
         error = true;
     }
+
     ASSERT(error);
 
 }
