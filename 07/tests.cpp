@@ -18,6 +18,19 @@ void TestCtors() {
     }
 
     {
+        my::vector<std::string> v_source(10, "asda");
+        my::vector<std::string> v1(10, "asda");
+        my::vector<std::string> v2(5, "asda");
+        v1 = v2;
+        my::vector<std::string> v_dest(v_source);
+        ASSERT_EQUAL(v_source.size(), v_dest.size())
+        ASSERT_EQUAL(v_source.capacity(), v_dest.capacity())
+        for (size_t i = 0; i < std::min(v_source.size(), v_dest.size()); ++i) {
+            ASSERT_EQUAL(v_source[i], v_dest[i])
+        }
+    }
+
+    {
         my::vector<int> v_source(10, 1);
         my::vector<int> v_dest(v_source);
         ASSERT_EQUAL(v_source.size(), v_dest.size())
@@ -49,6 +62,25 @@ void TestCtors() {
 }
 
 void TestMethods() {
+
+    {
+        my::vector<std::string> v1(10, std::string(1000, 'a'));
+        my::vector<std::string> v2(5, std::string(500, 'a'));
+        my::vector<std::string> v3(15, std::string(1500, 'a'));
+        
+        v1 = v2;
+        v1 = v3;
+    }
+
+    {
+        my::vector<std::string> v1(10, std::string(1000, 'a'));
+        my::vector<std::string> v2(5, std::string(500, 'a'));
+        my::vector<std::string> v3(15, std::string(1500, 'a'));
+        
+        v1 = std::move(v2);
+        v1 = std::move(v3);
+    }
+
     {
         my::vector<int> v;
         v.push_back(1);

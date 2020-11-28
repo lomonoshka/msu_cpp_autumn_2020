@@ -101,6 +101,7 @@ class vector {
     }
     constexpr vector& operator=(vector&& other) {
         if (data_ != other.data_) {
+            erase(data_, data_ + size_);
             alloc_.deallocate(data_);
             data_ = std::exchange(other.data_, nullptr);
             size_ = std::exchange(other.size_, 0);
@@ -203,7 +204,7 @@ class vector {
 
     constexpr const_reference at(size_type n) const {
         if (n >= size_) {
-            throw std::out_of_range();
+            throw std::out_of_range("Index is out of range");
         } else {
             return data_[n];
         }
@@ -211,7 +212,7 @@ class vector {
 
     constexpr reference at(size_type n) {
         if (n >= size_) {
-            throw std::out_of_range();
+            throw std::out_of_range("Index is out of range");
         } else {
             return data_[n];
         }
