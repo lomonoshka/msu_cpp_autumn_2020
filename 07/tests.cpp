@@ -82,6 +82,16 @@ void TestMethods() {
     }
 
     {
+        my::vector<std::string> v1(10, std::string(1000, 'a'));
+        my::vector<std::string> v2(5, std::string(500, 'a'));
+
+        v1.resize(6);
+        v1.push_back("asdasdasdasdas");
+        v2.push_back("adasdsa");
+        v2.reserve(1000);
+    }
+
+    {
         my::vector<int> v;
         v.push_back(1);
         ASSERT_EQUAL(v.back(), 1)

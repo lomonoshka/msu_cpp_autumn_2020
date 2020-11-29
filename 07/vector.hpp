@@ -1,7 +1,7 @@
 #pragma once
 #include <initializer_list>
 #include <iostream>
-
+#include <regex>
 #include "allocator.hpp"
 #include "iterator.hpp"
 
@@ -23,9 +23,10 @@ class vector {
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
     // utility functions for Allocator
-    void fill(pointer begin, pointer end, value_type value) {
+    template <typename... Args>
+    void fill(pointer begin, pointer end, Args&&... args) {
         for (pointer i = begin; i != end; ++i) {
-            alloc_.construct(i, value);
+            alloc_.construct(i, args...);
         }
     }
 
@@ -42,7 +43,9 @@ class vector {
         : alloc_(Alloc),
           data_(alloc_.allocate(size)),
           capacity_(size),
-          size_(0){};
+          size_(0) {
+        fill(data_, data_ + size);
+    };
 
     constexpr vector(size_type size, const T& value, const Allocator& Alloc = Allocator())
         : alloc_(Alloc),
@@ -57,7 +60,10 @@ class vector {
           data_(alloc_.allocate(other.capacity_)),
           capacity_(other.capacity_),
           size_(other.size_) {
-        std::copy(other.data_, other.data_ + size_, data_);
+        // copy(other.data_, other.data_ + size_, data_) - было
+        for (size_type i = 0; i < size_; ++i) {
+            alloc_.construct(data_+ i, other[i]);
+        }
     };
 
     constexpr vector(vector&& other) noexcept
@@ -75,12 +81,15 @@ class vector {
           data_(alloc_.allocate(std::size(list))),
           capacity_(std::size(list)),
           size_(std::size(list)) {
-        std::move(list.begin(), list.end(), data_);
+        size_type i = 0;
+        for (auto val : list) {
+            alloc_.construct(data_+ i++, std::move(val));
+        }
     };
 
     ~vector() {
         erase(data_, data_ + capacity_);
-        alloc_.deallocate(data_);
+        alloc_.deallocate(data_, capacity_);
         size_ = 0;
         capacity_ = 0;
     };
@@ -101,8 +110,8 @@ class vector {
     }
     constexpr vector& operator=(vector&& other) {
         if (data_ != other.data_) {
-            erase(data_, data_ + size_);
-            alloc_.deallocate(data_);
+            erase(data_, data_ + capacity_);
+            alloc_.deallocate(data_, capacity_);
             data_ = std::exchange(other.data_, nullptr);
             size_ = std::exchange(other.size_, 0);
             capacity_ = std::exchange(other.capacity_, 0);
@@ -174,9 +183,6 @@ class vector {
             reserve(size);
             fill(data_ + size_, data_ + size, value);
         }
-        if (size < size_) {
-            erase(data_ + size, data_ + size_);
-        }
         size_ = size;
     }
 
@@ -206,7 +212,7 @@ class vector {
         if (n >= size_) {
             throw std::out_of_range("Index is out of range");
         } else {
-            return data_[n];
+            return *(data_ + n);
         }
     }
 
@@ -214,7 +220,7 @@ class vector {
         if (n >= size_) {
             throw std::out_of_range("Index is out of range");
         } else {
-            return data_[n];
+            return *(data_ + n);
         }
     }
 
@@ -240,6 +246,7 @@ class vector {
         if (size_ == capacity_) {
             reserve(capacity_ ? capacity_ * 2 : 1);
         }
+        alloc_.destroy(data_ + size_);
         alloc_.construct(data_ + size_++, T(std::forward<Args>(args)...));
         return back();
     }
@@ -248,6 +255,7 @@ class vector {
         if (size_ == capacity_) {
             reserve(capacity_ ? capacity_ * 2 : 1);
         }
+        alloc_.destroy(data_ + size_);
         alloc_.construct(data_ + size_++, value);
     }
 
@@ -255,6 +263,7 @@ class vector {
         if (size_ == capacity_) {
             reserve(capacity_ ? capacity_ * 2 : 1);
         }
+        alloc_.destroy(data_ + size_);
         alloc_.construct(data_ + size_++, std::move(value));
     }
 

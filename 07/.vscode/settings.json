@@ -47,6 +47,13 @@
         "chrono": "cpp",
         "ctime": "cpp",
         "ratio": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "bitset": "cpp",
+        "condition_variable": "cpp",
+        "cstring": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "regex": "cpp",
+        "shared_mutex": "cpp"
     }
 }

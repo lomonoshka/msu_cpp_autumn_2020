@@ -1,4 +1,5 @@
 #include <memory>
+#include <limits>
 
 namespace my {
 template <class T>
@@ -22,7 +23,7 @@ class allocator : public std::allocator<T> {
         throw std::bad_alloc();
     }
 
-    void deallocate(pointer p) noexcept {
+    void deallocate(pointer p, size_type n) noexcept {
         std::free(p);
     }
 
